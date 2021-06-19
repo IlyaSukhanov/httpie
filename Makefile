@@ -77,13 +77,19 @@ venv:
 
 test:
 	@echo $(H1)Running tests$(HEADER_EXTRA)$(H1END)
-	$(VENV_BIN)/python -m pytest $(COV) ./httpie $(COV) ./tests --doctest-modules --verbose ./httpie ./tests
+	$(VENV_BIN)/python -m pytest $(COV) ./httpie $(COV) ./tests --doctest-modules --verbose ./httpie ./tests $(MISSING)
 	@echo
 
 
 test-cover: COV=--cov
 test-cover: HEADER_EXTRA=' (with coverage)'
 test-cover: test
+
+test-cover-lines:
+test-cover-lines: COV=--cov
+test-cover-lines: HEADER_EXTRA=' (with missing lines coverage report)'
+test-cover-lines: MISSING=--cov-report term-missing
+test-cover-lines: test
 
 
 # test-all is meant to test everything — even this Makefile
