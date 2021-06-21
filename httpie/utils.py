@@ -5,8 +5,11 @@ from collections import OrderedDict
 from http.cookiejar import parse_ns_headers
 from pprint import pformat
 from typing import List, Optional, Tuple
+import re
 
 import requests.auth
+
+RE_COOKIE_SPLIT = re.compile(r', (?=[^ ;]+=)')
 
 
 def load_json_preserve_order(s):
@@ -86,7 +89,7 @@ def get_content_type(filename):
 
 
 def get_expired_cookies(
-    headers: List[Tuple[str, str]],
+    cookies: str,
     now: float = None
 ) -> List[dict]:
 
@@ -96,9 +99,9 @@ def get_expired_cookies(
         return expires is not None and expires <= now
 
     attr_sets: List[Tuple[str, str]] = parse_ns_headers(
-        value for name, value in headers
-        if name.lower() == 'set-cookie'
+        RE_COOKIE_SPLIT.split(cookies)
     )
+
     cookies = [
         # The first attr name is the cookie name.
         dict(attrs[1:], name=attrs[0][0])
@@ -106,6 +109,7 @@ def get_expired_cookies(
     ]
 
     _max_age_to_expires(cookies=cookies, now=now)
+    "Set-Cookie: foo=bar; Expires=Mon, 21 Jun 2021 04:20:21 GMT; Max-Age=1; Path=/"
 
     return [
         {
